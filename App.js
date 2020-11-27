@@ -16,41 +16,29 @@ export default function App() {
   }
 
   function compute() {
+    let ans
+    ans = price - (price * (percent/100))
+    Alert.alert('the new price is ',ans)
   }
   return (
     <View style={styles.container}>
       <Text style={styles.paragraph}>Discount Calculator</Text>
       <TextInput
         value={price}
+        placeholder='enter price'
+        onChangeText={(price)=>setPrice(price)}
+        keyboardType='number-pad'
         style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
       />
       <TextInput
         value={percent}
+        placeholder='enter percentage'
+        onChangeText={(percent)=>setPercent(percent)}
+        keyboardType='number-pad'
         style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
       />
       <View style={styles.fixToText}>
-        <Button
-          title="  1  "
-          value="1"
-          color="darkslategrey"
-          onPress={()=>setPrice(price.concat("1"))}
-        />
-        <Button title="  2  " color="darkslategrey" onPress={()=>setResult(result.concat("2"))}/>
-        <Button title="  3  " color="darkslategrey" onPress={()=>setResult(result.concat("3"))}/>
-      </View>
-      <View style={styles.fixToText}>
-        <Button title="  4  " color="darkslategrey" onPress={()=>setResult(result.concat("4"))}/>
-        <Button title="  5  " color="darkslategrey" onPress={()=>setResult(result.concat("5"))}/>
-        <Button title="  6  " color="darkslategrey" onPress={()=>setResult(result.concat("6"))}/>
-      </View>
-      <View style={styles.fixToText}>
-        <Button title="  7  " color="darkslategrey" onPress={()=>setResult(result.concat("7"))}/>
-        <Button title="  8  " color="darkslategrey" onPress={()=>setResult(result.concat("8"))}/>
-        <Button title="  9  " color="darkslategrey" onPress={()=>setResult(result.concat("9"))}/>
-      </View>
-      <View style={styles.fixToText}>
-        <Button title="  0  " color="darkslategrey" onPress={()=>setResult(result.concat("0"))}/>
-        <Button title="remove " color="black" onPress={remove}/>
+        <Button title="      remove      " color="black" onPress={remove}/>
       </View>
       <View style={styles.fixToText}>
         <Button title="     compute     " color="goldenrod" onPress={compute} />
