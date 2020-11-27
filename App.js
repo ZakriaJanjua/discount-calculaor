@@ -9,6 +9,9 @@ import NumberGuesser from './components/AssetExample';
 export default function App() {
   const [price, setPrice] = useState('');
   const [percent, setPercent] = useState('');
+  const orgp = ['original price']
+  const disc = ['discount']
+  const newp = ['new price']
 
   function remove() {
     setPrice('');
@@ -18,7 +21,20 @@ export default function App() {
   function compute() {
     let ans
     ans = price - (price * (percent/100))
-    Alert.alert('the new price is ',ans)
+    orgp.push(price)
+    disc.push(percent)
+    newp.push(ans)
+    Alert.alert('the new price is '+ ans)
+    console.log('the new price is', ans)
+
+  }
+
+
+  function history(){
+    console.log(orgp[0],'-', disc[0],'-', newp[0])
+    for (let i=1; i<orgp.length; i++){
+      console.log(orgp[i],'-',disc[i],'-',newp[i])
+    }
   }
   return (
     <View style={styles.container}>
@@ -44,7 +60,7 @@ export default function App() {
         <Button title="     compute     " color="goldenrod" onPress={compute} />
       </View>
       <View style={styles.fixToText}>
-        <Button title="      history      "  />
+        <Button title="      history      "  onPress={history}/>
       </View>
     </View>
   );
