@@ -1,76 +1,191 @@
 import * as React from 'react';
-import { useState } from 'react';
-import { Text, View, StyleSheet, Button, TextInput, Alert, Modal } from 'react-native';
+import { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  Button,
+  TouchableOpacity,
+  Keyboard,
+  Alert,
+} from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 import Constants from 'expo-constants';
+import { DataTable } from 'react-native-paper';
 
-// You can import from local files
-import NumberGuesser from './components/AssetExample';
+function HomeScreen({ navigation }) {
+  const [getPrice, setPrice] = useState(0);
+  const [getPercent, setPercent] = useState(0);
+  const [getResult, setResult] = useState(0);
+  const [getList, setList] = useState([]);
 
-export default function App() {
-  const [price, setPrice] = useState('');
-  const [percent, setPercent] = useState('');
-  const orgp = ['original price']
-  const disc = ['discount']
-  const newp = ['new price']
+  useEffect(() => {
+    compute();
+  });
 
-  function remove() {
-    setPrice('');
-    setPercent('')
-  }
+  navigation.setOptions({
+    headerRight: () => (
+      <Button
+        title="history"
+        onPress={() => {
+          navigation.navigate('History', {
+            getList: getList,
+            setList: setList,
+          });
+        }}></Button>
+    ),
+  });
 
-  function compute() {
-    let ans
-    ans = price - (price * (percent/100))
-    orgp.push(price)
-    disc.push(percent)
-    newp.push(ans)
-    Alert.alert('the new price is '+ ans)
-    console.log('the new price is', ans)
+  const addItem = () => {
+    setList([
+      ...getList,
+      {
+        key: Math.random().toString(),
+        dataPrice: getPrice,
+        dataPercent: getPercent,
+        dataResult: getResult,
+      },
+    ]);
+    setPrice(0);
+    setPercent(0);
+    Keyboard.dismiss();
+  };
 
-  }
+  const compute = () => {
+    return setResult(getPrice - getPrice * (getPercent / 100));
+  };
 
-
-  function history(){
-    console.log(orgp[0],'-', disc[0],'-', newp[0])
-    for (let i=1; i<orgp.length; i++){
-      console.log(orgp[i],'-',disc[i],'-',newp[i])
-    }
-  }
   return (
     <View style={styles.container}>
       <Text style={styles.paragraph}>Discount Calculator</Text>
       <TextInput
-        value={price}
-        placeholder='enter price'
-        onChangeText={(price)=>setPrice(price)}
-        keyboardType='number-pad'
+        placeholder="enter price"
+        keyboardType="number-pad"
+        onChangeText={(getPrice) => setPrice(getPrice)}
         style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
+        value={getPrice}
       />
       <TextInput
-        value={percent}
-        placeholder='enter percentage'
-        onChangeText={(percent)=>setPercent(percent)}
-        keyboardType='number-pad'
+        placeholder="enter percentage"
+        keyboardType="number-pad"
+        onChangeText={(getPercent) => setPercent(getPercent)}
         style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
+        value={getPercent}
+        maxLength={2}
       />
-      <View style={styles.fixToText}>
-        <Button title="      remove      " color="black" onPress={remove}/>
-      </View>
-      <View style={styles.fixToText}>
-        <Button title="     compute     " color="goldenrod" onPress={compute} />
-      </View>
-      <View style={styles.fixToText}>
-        <Button title="      history      "  onPress={history}/>
+
+      <View>
+        <View style={styles.fixToText}>
+          <Button title="save" disabled={getPrice == 0} onPress={addItem} />
+        </View>
+
+        <View>
+          <Text style={{ fontWeight: 'bold' }}>New Price: {getResult}</Text>
+        </View>
       </View>
     </View>
   );
 }
 
+function HistoryScreen({ navigation, route }) {
+  navigation.setOptions({
+    headerRight: () => <Button title="clear" onPress={clearAll}></Button>,
+  });
+
+  const list = route.params.getList;
+  const setl = route.params.setList;
+  const [newList, setNewList] = useState(list);
+
+  const removeItem = (itemKey) => {
+    let update = list.filter((item) => item.key !== itemKey);
+    console.log(update);
+    navigation.setParams(setl(update));
+    setNewList(update);
+    //setNewList(navigation.setParams(setl(list.filter((item) => item.key !== itemKey))))
+  };
+
+  const clearAll = () => {
+    Alert.alert(
+      'Clear All',
+      'Are you sure you want to delete history?',
+      [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        { text: 'Yes', onPress: () => {
+          setl([])
+          setNewList([])} },
+      ],
+      { cancelable: false }
+    );
+  };
+
+  return (
+    <View>
+      <DataTable>
+        <DataTable.Header>
+          <DataTable.Title numeric>Original Price</DataTable.Title>
+          <DataTable.Title numeric>Discount</DataTable.Title>
+          <DataTable.Title numeric>Final Price</DataTable.Title>
+          <DataTable.Title></DataTable.Title>
+        </DataTable.Header>
+      </DataTable>
+
+      {newList.map((item, index) => (
+        <DataTable>
+          <DataTable.Row>
+            <DataTable.Cell numeric>{item.dataPrice}</DataTable.Cell>
+            <DataTable.Cell numeric>{item.dataPercent}</DataTable.Cell>
+            <DataTable.Cell numeric>{item.dataResult}</DataTable.Cell>
+            <DataTable.Cell numeric>
+              <TouchableOpacity onPress={() => removeItem(item.key)}>
+                <View
+                  style={{
+                    backgroundColor: 'blue',
+                    borderRadius: 45,
+                    padding: 3,
+                    justifyContent: 'center',
+                    width: 30,
+                    alignItems: 'center',
+                  }}>
+                  <Text style={styles.cross}>X</Text>
+                </View>
+              </TouchableOpacity>
+            </DataTable.Cell>
+          </DataTable.Row>
+        </DataTable>
+      ))}
+    </View>
+  );
+}
+
+const Stack = createStackNavigator();
+
+function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator
+        initialRouteName={'Home'}
+        screenOptions={{
+          headerTitleAlign: 'center',
+          headerTintColor: 'royalblue',
+          headerStyle: {
+            backgroundColor: 'lightblue',
+          },
+        }}>
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="History" component={HistoryScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    paddingTop: Constants.statusBarHeight,
     backgroundColor: '#ecf0f1',
     padding: 8,
   },
@@ -84,6 +199,10 @@ const styles = StyleSheet.create({
   fixToText: {
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: 'lightgrey',
+    marginTop: 9,
+  },
+  cross: {
+    color: 'white',
   },
 });
+export default App;
